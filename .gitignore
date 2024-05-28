@@ -1,0 +1,12 @@
+*.log
+*.logs
+logs/
+run/
+.env
+venv/
+.idea/
+*.pyc
+*.pkl
+*.csv
+*.parquet
+.ipynb_checkpoints/

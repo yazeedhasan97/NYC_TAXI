@@ -1,0 +1,26 @@
+{
+  "extract_extensions": [
+    "zip",
+    "rar",
+    "parquet",
+    "pdf"
+  ],
+  "database": {
+    "delicate": "postgresql",
+    "database": "postgres",
+    "host": "localhost",
+    "port": 5432,
+    "username": "postgres",
+    "password": "postgres",
+    "auth_file": null,
+    "query": null,
+    "stream": false,
+    "echo": false
+  },
+  "email": {
+    "server": "smtp.gmail.com",
+    "port": 587,
+    "username": "yazeed.hasan.97@gmail.com",
+    "password": "mvioiyaqkaqipdni"
+  }
+}

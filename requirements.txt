@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+pandas
+pyarrow
+SQLAlchemy
+psycopg2
+cryptography
