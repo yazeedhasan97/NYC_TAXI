@@ -265,7 +265,7 @@ class DBConnection:
     def __create_engine(self):
         self._logger.info(f"Creating connection to {self.config.host} on {self.config.database}...")
         try:
-            conn_url = sa.engine.url.URL( # versions issues
+            conn_url = sa.engine.url.URL(  # versions issues
                 drivername=self.config.delicate,
                 username=self.config.username,
                 password=self.config.password,
@@ -333,6 +333,8 @@ class DBConnection:
         :param chunk_size: Number of rows per chunk to return for large queries.
         :return: DataFrame containing the result set.
         """
+
+
         query = text(query)
         self._logger.info(f'Executing \n{query}\n in progress...')
         try:
@@ -346,8 +348,8 @@ class DBConnection:
             raise e
 
     def insert(self, df: pd.DataFrame, table: str, schema: str,
-               if_exists: Literal['fail', 'replace', 'append'] = 'fail', chunk_size: Optional[int] = None,
-               index: bool = False):
+               if_exists: Literal['fail', 'replace', 'append'] = 'fail', chunk_size: Optional[int] = 5000,
+               index: bool = False, ):
         """
         Inserts data into a database table. This method can append to, replace,
         or fail upon encountering existing data based on the 'if_exists' parameter.
@@ -361,7 +363,14 @@ class DBConnection:
         :return: True if the operation is successful.
         """
         try:
-            df.to_sql(table, self.engine, schema=schema, if_exists=if_exists, chunksize=chunk_size, index=index)
+            # TODO:
+            #  1- add streaming mechanism
+            #  2- speed up the process
+            df.to_sql(
+                table, self.engine, schema=schema,
+                if_exists=if_exists, chunksize=chunk_size, index=index,
+                method='multi'
+            )
             self._logger.info(f'Data inserted into [{table}] in schema {schema} successfully.')
             return True
         except sa.exc.SQLAlchemyError as e:
@@ -386,6 +395,7 @@ class DBConnection:
         if self.__engine:
             self.engine.dispose()
             self._logger.info('<> Connection Closed Successfully <>')
+
 
 # THis is a session to work at the record level or models/objects level
 class DBTablesFactory:

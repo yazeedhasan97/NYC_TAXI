@@ -62,7 +62,7 @@ def timer(func):
 
 def find_base_directory():
     current_file = os.path.abspath(__file__)
-    base_directory = os.path.dirname(current_file)
+    base_directory = os.path.dirname(os.path.dirname(current_file))
     return base_directory
 
 

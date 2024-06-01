@@ -10,8 +10,6 @@ from models.utils import Model
 BASE = declarative_base(cls=Model)  # DDL
 SCHEMA = 'nyc_taxi_analysis'  # case sensitive
 
-
-
 # ORM: object Relational Mapper: bridge to connect OOP programs [models] to DB [tables]
 
 CategoryEnum = Enum(Category, name='CategoryEnum', schema=SCHEMA)
@@ -28,88 +26,77 @@ class URIs(BASE):  # class, model
         Index('idx_dim_scrapper_date', 'date', ),  # fasten the retrival queries
         Index('idx_dim_scrapper_downloaded', 'downloaded'),  # fasten the retrival queries
         {'extend_existing': True, 'schema': SCHEMA, },
+        # TODO: add [create or replace] instead of [create if not exists]
 
     )
     uri = Column(String, nullable=False)
     hash = Column(BigInteger, primary_key=True, )
     file = Column(String, nullable=False)
-    category = Column(CategoryEnum, default=Category.OTHER)
+    category = Column(CategoryEnum, default=Category.OTHER)  # TODO: dim table for meta data about the categories/types
     date = Column(Integer, )
     downloaded = Column(Boolean, nullable=False)
+    path = Column(String, nullable=True)
 
     add_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=func.now(),)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=func.now(), )
 
 
-    # class Bike(BASE):  # class, model
-    #     __tablename__ = 'bikes'
-    #     __table_args__ = (
-    #         PrimaryKeyConstraint('id'),
-    #         {'extend_existing': True, 'schema': SCHEMA, },
-    #
-    #     )
-    #
-    #     # Note: models doesn't provide validation for the data [by default], error will happen on the database level
-    #     # -- we must provide validation - through encapsulation
-    #     id = Column(Integer, autoincrement=True, primary_key=True, )
-    #
-    #
-    # class Audit(BASE):  # class, model # track the performance of your application
-    #     # audits - aims for external[business] use and to track of dashboards
-    #
-    #     __tablename__ = 'audits'
-    #     __table_args__ = (
-    #         PrimaryKeyConstraint('id'),
-    #         {'extend_existing': True, 'schema': SCHEMA, },
-    #
-    #     )
-    #
-    #     # user = ....
-    #     # os = ...
-    #     # location = ...
-    #     id = Column(Integer, autoincrement=True, primary_key=True, )
-    #     os = Column(String, nullable=False, )
-    #     ip = Column(String, nullable=False, )
-    #     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    #     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=func.now(), nullable=False)
-    #
-    #     pass
+class YellowTaxi(BASE):  # class, model
+    __tablename__ = 'yellow_taxi'
+    __table_args__ = (
+        PrimaryKeyConstraint('hash'),
+        Index(
+            'idx_yellow_taxi',
+            'vendor_id', 'pep_pick_up_datetime', 'pep_drop_off_datetime', 'rate_code_id', 'pu_location_id',
+            'passenger_count', 'trip_distance', 'do_location_id', 'payment_type', 'fare_amount', 'extra',
+            'mta_tax', 'tip_amount', 'tolls_amount', 'improvement_surcharge', 'total_amount', 'congestion_surcharge',
+            'airport_fee', 'path', 'add_at',
+        ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_pep_pick_up_datetime', 'pep_pick_up_datetime', ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_pep_drop_off_datetime', 'pep_drop_off_datetime', ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_rate_code_id', 'rate_code_id', ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_pu_location_id', 'pu_location_id', ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_do_location_id', 'do_location_id', ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_passenger_count', 'passenger_count', ),  # fasten the retrival queries
+        Index('idx_dim_scrapper_trip_distance', 'trip_distance'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_payment_type', 'payment_type'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_fare_amount', 'fare_amount'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_extra', 'extra'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_mta_tax', 'mta_tax'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_tip_amount', 'tip_amount'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_tolls_amount', 'tolls_amount'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_improvement_surcharge', 'improvement_surcharge'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_total_amount', 'total_amount'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_congestion_surcharge', 'congestion_surcharge'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_airport_fee', 'airport_fee'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_path', 'path'),  # fasten the retrival queries
+        Index('idx_dim_scrapper_add_at', 'add_at'),  # fasten the retrival queries
+        {'extend_existing': True, 'schema': SCHEMA, },
+        # TODO: add [create or replace] instead of [create if not exists]
 
-    # class DataQualityInput(BASE):
-    # __tablename__ = 'data_quality_inputs'
-    #
-    # owner = Column(String, nullable=True, )
-    # schema = Column(String, nullable=False, default='feeds')
-    # feed = Column(String, nullable=False)  # the only required field
-    # type = Column(Enum(FeedType), default=FeedType.DUMP, nullable=False)
-    # engine = Column(Enum(Engine), default=Engine.KAMANJA, nullable=False)
-    # # best_run_time = Column(Enum(FeedType), default=FeedType.DUMP, nullable=False)
-    #
-    # threshold = Column(Float, default=0.1, nullable=False)
-    # window = Column(Integer, default=7, nullable=False)
-    # partitioned_by = Column(String, default='tbl_dt', nullable=False)
-    # regex = Column(String, default='([0-9]{8}).*$', )
-    # ignore_files_with_regex = Column(String, default='%.tar.gz$', )
-    # seasonality = Column(Enum(Frequency), default=Frequency.WEEKLY, nullable=False)
-    #
-    # last_available_stats_day = Column(Integer, nullable=True)
-    # frequency = Column(Enum(Frequency), default=Frequency.DAILY, nullable=False)
-    # msck = Column(Boolean, default=True, nullable=False)
-    # dedup = Column(Boolean, default=True, nullable=False)
-    # pcf = Column(Boolean, default=True, nullable=False)
-    # trend = Column(Boolean, default=True, nullable=False)
-    # match = Column(Boolean, default=True, nullable=False)
-    #
-    # # if true meaning it was not found in file stats but still registered in the system
-    # decommissioned = Column(Boolean, default=False, nullable=False)
-    # decommission_after_days = Column(Integer, default=92, nullable=False)
-    # created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    # updated_at = Column(DateTime, default=datetime.utcnow, onupdate=func.now(), nullable=False)
-    # removed_at = Column(DateTime, default=None, nullable=True)
-    #
-    # __table_args__ = (
-    #     PrimaryKeyConstraint('schema', 'feed'),
-    #     {'extend_existing': True, 'schema': DQ_SCHEMA, },
-    #
-    # )
-    # pass
+    )
+    # TODO: know your data -- Data Model
+    vendor_id = Column(Integer, nullable=False)
+    pep_pick_up_datetime = Column(DateTime, nullable=True)
+    pep_drop_off_datetime = Column(DateTime, nullable=True)
+    passenger_count = Column(Float, nullable=True)
+    trip_distance = Column(Float, nullable=True)
+    rate_code_id = Column(Float, nullable=True)
+    store_and_fwd_flag = Column(String, nullable=True)
+    pu_location_id = Column(Integer, nullable=True)
+    do_location_id = Column(Integer, nullable=True)
+    payment_type = Column(BigInteger, nullable=True)
+    fare_amount = Column(Float, nullable=True)
+    extra = Column(Float, nullable=True)
+    mta_tax = Column(Float, nullable=True)
+    tip_amount = Column(Float, nullable=True)
+    tolls_amount = Column(Float, nullable=True)
+    improvement_surcharge = Column(Float, nullable=True)
+    total_amount = Column(Float, nullable=True)
+    congestion_surcharge = Column(Float, nullable=True)
+    airport_fee = Column(Float, nullable=True)
+
+    path = Column(String, nullable=False)  # enrichments
+    hash = Column(BigInteger, primary_key=True, )
+    add_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+
